@@ -1,4 +1,4 @@
-// Type definitions for Sequelize 4.0.0
+// Type definitions for Sequelize 4.27.0
 // Project: http://sequelizejs.com
 // Definitions by: samuelneff <https://github.com/samuelneff>
 //                 Peter Harris <https://github.com/codeanimal>
@@ -7,6 +7,8 @@
 //                 Patsakol Tangjitcharoenchai <https://github.com/kukoo1>
 //                 Sebastien Bramille <https://github.com/oktapodia>
 //                 Nick Mueller <https://github.com/morpheusxaut>
+//                 Philippe D'Alva <https://github.com/TitaneBoy>
+//                 Carven Zhang <https://github.com/zjy01>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.3
 
@@ -139,7 +141,7 @@ declare namespace sequelize {
          */
         (
             values?: TAttributes,
-            options?: BelongsToCreateAssociationMixinOptions | CreateOptions | BelongsToSetAssociationMixinOptions
+            options?: BelongsToCreateAssociationMixinOptions | CreateOptions<TAttributes> | BelongsToSetAssociationMixinOptions
         ): Promise<void>;
     }
 
@@ -253,7 +255,7 @@ declare namespace sequelize {
          */
         (
             values?: TAttributes,
-            options?: HasOneCreateAssociationMixinOptions | HasOneSetAssociationMixinOptions | CreateOptions
+            options?: HasOneCreateAssociationMixinOptions | HasOneSetAssociationMixinOptions | CreateOptions<TAttributes>
         ): Promise<void>;
     }
 
@@ -494,7 +496,7 @@ declare namespace sequelize {
          */
         (
             values?: TAttributes,
-            options?: HasManyCreateAssociationMixinOptions | CreateOptions
+            options?: HasManyCreateAssociationMixinOptions | CreateOptions<TAttributes>
         ): Promise<TInstance>;
     }
 
@@ -957,7 +959,7 @@ declare namespace sequelize {
          */
         (
             values?: TAttributes,
-            options?: BelongsToManyCreateAssociationMixinOptions | CreateOptions | { through: TJoinTableAttributes }
+            options?: BelongsToManyCreateAssociationMixinOptions | CreateOptions<TAttributes> | { through: TJoinTableAttributes }
         ): Promise<TInstance>;
     }
 
@@ -1329,7 +1331,13 @@ declare namespace sequelize {
          * A string or a data type to represent the identifier in the table
          */
         keyType?: DataTypeAbstract;
-
+        /**
+         * A string to represent the name of the field to use as the key for an 1 to many association in the source table.
+         *
+         * @see http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-hasMany
+         * @see https://github.com/sequelize/sequelize/blob/b4fd46426db9cdbb97074bea121203d565e4195d/lib/associations/has-many.js#L81
+         */
+        sourceKey?: string;
     }
 
     /**
@@ -1695,6 +1703,34 @@ declare namespace sequelize {
 
     }
 
+    interface DataTypeTinyInt extends DataTypeAbstractNumber<DataTypeTinyInt> {
+
+        /**
+         * Length of the number field.
+         */
+        (options?: { length: number }): DataTypeTinyInt;
+        (length: number): DataTypeTinyInt;
+
+    }
+    interface DataTypeSmallInt extends DataTypeAbstractNumber<DataTypeSmallInt> {
+
+        /**
+         * Length of the number field.
+         */
+        (options?: { length: number }): DataTypeSmallInt;
+        (length: number): DataTypeSmallInt;
+
+    }
+    interface DataTypeMediumInt extends DataTypeAbstractNumber<DataTypeMediumInt> {
+
+        /**
+         * Length of the number field.
+         */
+        (options?: { length: number }): DataTypeMediumInt;
+        (length: number): DataTypeMediumInt;
+
+    }
+
     interface DataTypeBigInt extends DataTypeAbstractNumber<DataTypeBigInt> {
 
         /**
@@ -1886,6 +1922,9 @@ declare namespace sequelize {
         CHAR: DataTypeChar;
         TEXT: DataTypeText;
         NUMBER: DataTypeNumber;
+        TINYINT: DataTypeTinyInt;
+        SMALLINT: DataTypeSmallInt;
+        MEDIUMINT: DataTypeMediumInt;
         INTEGER: DataTypeInteger;
         BIGINT: DataTypeBigInt;
         FLOAT: DataTypeFloat;
@@ -3148,7 +3187,7 @@ declare namespace sequelize {
     /**
      * Complex include options
      */
-    interface IncludeOptions {
+    interface IncludeOptions<TAttributes = any> {
 
         /**
          * The model you want to eagerly load
@@ -3175,7 +3214,7 @@ declare namespace sequelize {
         /**
          * A list of attributes to select from the child model
          */
-        attributes?: FindOptionsAttributesArray | { include?: FindOptionsAttributesArray, exclude?: Array<string> };
+        attributes?: FindOptionsAttributesArray<TAttributes> | { include?: FindOptionsAttributesArray<TAttributes>, exclude?: keyof TAttributes };
 
         /**
          * If true, converts to an inner join, which means that the parent model will only be loaded if it has any
@@ -3191,7 +3230,7 @@ declare namespace sequelize {
         /**
          * Load further nested related models
          */
-        include?: Array<Model<any, any> | IncludeOptions>;
+        include?: Array<Model<any, any> | IncludeOptions<TAttributes>>;
 
         /**
          * If true, only non-deleted records will be returned. If false, both deleted and non-deleted records will
@@ -3205,14 +3244,14 @@ declare namespace sequelize {
     /**
      * Shortcut for types used in FindOptions.attributes
      */
-    type FindOptionsAttributesArray = Array<string | literal | [string, string] | fn | [fn, string] | cast | [cast, string] | [literal, string]>;
+    type FindOptionsAttributesArray<TAttributes> = Array<keyof TAttributes | literal | [keyof TAttributes, string] | fn | [fn, string] | cast | [cast, string] | [literal, string]>;
 
     /**
      * Options that are passed to any model creating a SELECT query
      *
      * A hash of options to describe the scope of the search
      */
-    interface FindOptions<T> extends LoggingOptions, SearchPathOptions {
+    interface FindOptions<T = any> extends LoggingOptions, SearchPathOptions {
 
         /**
          * A hash of attributes to describe your search. See above for examples.
@@ -3225,7 +3264,7 @@ declare namespace sequelize {
          * `Sequelize.literal`, `Sequelize.fn` and so on), and the second is the name you want the attribute to
          * have in the returned instance
          */
-        attributes?: FindOptionsAttributesArray | { include?: FindOptionsAttributesArray, exclude?: Array<string> };
+        attributes?: FindOptionsAttributesArray<T> | { include?: FindOptionsAttributesArray<T>, exclude?: Array<keyof T> };
 
         /**
          * If true, only non-deleted records will be returned. If false, both deleted and non-deleted records will
@@ -3239,7 +3278,7 @@ declare namespace sequelize {
          * If your association are set up with an `as` (eg. `X.hasMany(Y, { as: 'Z }`, you need to specify Z in
          * the as attribute when eager loading Y).
          */
-        include?: Array<Model<any, any> | IncludeOptions>;
+        include?: Array<Model<any, any> | IncludeOptions<T>>;
 
         /**
          * Specifies an ordering. If a string is provided, it will be escaped. Using an array, you can provide
@@ -3280,7 +3319,7 @@ declare namespace sequelize {
          * Group by. It is not mentioned in sequelize's JSDoc, but mentioned in docs.
          * https://github.com/sequelize/sequelize/blob/master/docs/docs/models-usage.md#user-content-manipulating-the-dataset-with-limit-offset-order-and-group
          */
-        group?: string | string[] | Object;
+        group?: keyof T | keyof T[] | Object;
 
 
         /**
@@ -3299,12 +3338,12 @@ declare namespace sequelize {
         rejectOnEmpty?: boolean;
     }
 
-    type AnyFindOptions = FindOptions<any>;
+    type AnyFindOptions = FindOptions;
 
     /**
      * Options for Model.count method
      */
-    interface CountOptions extends LoggingOptions, SearchPathOptions {
+    interface CountOptions<T = any> extends LoggingOptions, SearchPathOptions {
 
         /**
          * A hash of search attributes.
@@ -3314,7 +3353,7 @@ declare namespace sequelize {
         /**
          * Include options. See `find` for details
          */
-        include?: Array<Model<any, any> | IncludeOptions>;
+        include?: Array<Model<any, any> | IncludeOptions<T>>;
 
         /**
          * Apply COUNT(DISTINCT(col))
@@ -3337,7 +3376,7 @@ declare namespace sequelize {
     /**
      * Options for Model.build method
      */
-    interface BuildOptions extends ReturningOptions {
+    interface BuildOptions<T = any> extends ReturningOptions {
 
         /**
          * If set to true, values will ignore field and virtual setters.
@@ -3354,13 +3393,13 @@ declare namespace sequelize {
          *
          * TODO: See set
          */
-        include?: Array<Model<any, any> | IncludeOptions>;
+        include?: Array<Model<any, any> | IncludeOptions<T>>;
     }
 
     /**
      * Options for Model.create method
      */
-    interface CreateOptions extends BuildOptions, InstanceSaveOptions {
+    interface CreateOptions<T = any> extends BuildOptions<T>, InstanceSaveOptions {
 
         /**
          * On Duplicate
@@ -3828,7 +3867,7 @@ declare namespace sequelize {
          *
          * If you provide an `include` option, the number of matching associations will be counted instead.
          */
-        count(options?: CountOptions): Promise<number>;
+        count(options?: CountOptions<TAttributes>): Promise<number>;
 
         /**
          * Find all the rows matching your query, within a specified offset / limit, and get the total number of
@@ -3886,17 +3925,17 @@ declare namespace sequelize {
         /**
          * Builds a new model instance. Values is an object of key value pairs, must be defined but can be empty.
          */
-        build(record?: TAttributes, options?: BuildOptions): TInstance;
+        build(record?: TAttributes, options?: BuildOptions<TAttributes>): TInstance;
 
         /**
          * Undocumented bulkBuild
          */
-        bulkBuild(records: TAttributes[], options?: BuildOptions): TInstance[];
+        bulkBuild(records: TAttributes[], options?: BuildOptions<TAttributes>): TInstance[];
 
         /**
          * Builds a new model instance and calls save on it.
          */
-        create(values?: TAttributes, options?: CreateOptions): Promise<TInstance>;
+        create(values?: TAttributes, options?: CreateOptions<TAttributes>): Promise<TInstance>;
 
         /**
          * Find a row that matches the query, or build (but don't save) the row if none is found.
@@ -6064,7 +6103,7 @@ declare namespace sequelize {
          * Normally this is done on process exit, so you only need to call this method if you are creating multiple
          * instances, and want to garbage collect some of them.
          */
-        close(): void;
+        close(): Promise<void>;
 
         /**
          * Returns the database version

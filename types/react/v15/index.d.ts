@@ -127,6 +127,26 @@ declare namespace React {
         type: keyof ReactSVG;
     }
 
+    interface WebViewHTMLAttributes<T> extends HTMLAttributes<T> {
+        allowFullScreen?: boolean;
+        allowpopups?: boolean;
+        autoFocus?: boolean;
+        autosize?: boolean;
+        blinkfeatures?: string;
+        disableblinkfeatures?: string;
+        disableguestresize?: boolean;
+        disablewebsecurity?: boolean;
+        guestinstance?: string;
+        httpreferrer?: string;
+        nodeintegration?: boolean;
+        partition?: string;
+        plugins?: boolean;
+        preload?: string;
+        src?: string;
+        useragent?: string;
+        webpreferences?: string;
+    }
+
     //
     // Factories
     // ----------------------------------------------------------------------
@@ -284,8 +304,9 @@ declare namespace React {
 
         // We MUST keep setState() as a unified signature because it allows proper checking of the method return type.
         // See: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/18365#issuecomment-351013257
+        // Also, the ` | S` allows intellisense to not be dumbisense
         setState<K extends keyof S>(
-            state: ((prevState: Readonly<S>, props: P) => (Pick<S, K> & Partial<S>)) | (Pick<S, K> & Partial<S>),
+            state: ((prevState: Readonly<S>, props: P) => (Pick<S, K> | S)) | (Pick<S, K> | S),
             callback?: () => any
         ): void;
 
@@ -3306,6 +3327,7 @@ declare namespace React {
         "var": DetailedHTMLFactory<HTMLAttributes<HTMLElement>, HTMLElement>;
         video: DetailedHTMLFactory<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
         wbr: DetailedHTMLFactory<HTMLAttributes<HTMLElement>, HTMLElement>;
+        webview: DetailedHTMLFactory<WebViewHTMLAttributes<HTMLElement>, HTMLElement>;
     }
 
     interface ReactSVG {
@@ -3536,6 +3558,7 @@ declare global {
             "var": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
             video: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
             wbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+            webview: React.DetailedHTMLProps<React.WebViewHTMLAttributes<HTMLElement>, HTMLElement>;
 
             // SVG
             svg: React.SVGProps<SVGSVGElement>;
